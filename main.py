@@ -1,6 +1,7 @@
 import sys
 import threading
 import time
+import websocket
 
 
 def on_message(ws, message):
@@ -24,6 +25,24 @@ def on_open(ws):
         ws.close()
 
     threading.Thread(target=run).start()
+
+
+def test_websocket_connection(num_threads):
+    websocket.enableTrace(True)
+
+    for _ in range(num_threads):
+        ws_url = "url"
+        ws = websocket.WebSocketApp(ws_url,
+                                    on_message=on_message,
+                                    on_error=on_error,
+                                    on_close=on_close)
+        ws.on_open = on_open
+        ws_thread = threading.Thread(target=ws.run_forever)
+        ws_thread.start()
+
+    for ws_thread in threading.enumerate():
+        if ws_thread != threading.current_thread():
+            ws_thread.join()
 
 
 if __name__ == "__main__":
